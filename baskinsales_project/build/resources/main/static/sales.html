@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaskinSales - 매출관리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            float: right;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .sales-table th,
+        .sales-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .sales-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .sales-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-menu {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 매출관리</h1>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-btn">대시보드</a>
+                <a href="sales.html" class="nav-btn active">매출관리</a>
+                <a href="inventory.html" class="nav-btn">재고관리</a>
+                <a href="ai-analysis.html" class="nav-btn">AI분석</a>
+            </div>
+            <button class="logout-btn" onclick="logout()">로그아웃</button>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <h3>📊 매출 통계 조회</h3>
+                <div class="form-group">
+                    <label>조회 기간:</label>
+                    <select id="period-select">
+                        <option value="daily">일별</option>
+                        <option value="weekly">주별</option>
+                        <option value="monthly">월별</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>시작 날짜:</label>
+                    <input type="date" id="start-date">
+                </div>
+                <div class="form-group">
+                    <label>종료 날짜:</label>
+                    <input type="date" id="end-date">
+                </div>
+                <button class="btn" onclick="getSalesStats()">매출 통계 조회</button>
+                <button class="btn btn-secondary" onclick="getHourlySales()">시간대별 판매</button>
+                <div id="sales-stats-result" class="results"></div>
+            </div>
+
+            <div class="card">
+                <h3>🏆 인기 상품 분석</h3>
+                <div class="form-group">
+                    <label>분석 기간:</label>
+                    <select id="top-period">
+                        <option value="daily">오늘</option>
+                        <option value="weekly">이번 주</option>
+                        <option value="monthly">이번 달</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="getTopProducts()">인기 상품 조회</button>
+                <button class="btn btn-secondary" onclick="getProductComparison()">상품 비교</button>
+                <div id="top-products-result" class="results"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h3>📈 매출 차트</h3>
+            <div class="chart-container">
+                <canvas id="salesChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h3>📋 최근 판매 내역</h3>
+            <div id="recent-sales"></div>
+        </div>
+    </div>
+
+    <script>
+        // 로그인 상태 확인
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // 로그아웃
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+
+        // 날짜 초기화
+        function initializeDates() {
+            const today = new Date();
+            const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('start-date').value = lastWeek.toISOString().slice(0, 10);
+            document.getElementById('end-date').value = today.toISOString().slice(0, 10);
+        }
+
+        // 매출 통계 조회
+        async function getSalesStats() {
+            const period = document.getElementById('period-select').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            
+            try {
+                // 실제 API 호출 대신 샘플 데이터 사용
+                const mockData = {
+                    totalSales: 8500000,
+                    totalOrders: 320,
+                    avgOrderValue: 26562,
+                    salesByPeriod: [
+                        { date: '2024-01-15', sales: 1250000, orders: 45 },
+                        { date: '2024-01-16', sales: 1380000, orders: 52 },
+                        { date: '2024-01-17', sales: 1420000, orders: 48 },
+                        { date: '2024-01-18', sales: 1350000, orders: 51 },
+                        { date: '2024-01-19', sales: 1580000, orders: 58 },
+                        { date: '2024-01-20', sales: 1650000, orders: 62 },
+                        { date: '2024-01-21', sales: 1450000, orders: 54 }
+                    ]
+                };
+
+                displaySalesStats(mockData);
+                drawSalesChart(mockData.salesByPeriod);
+                
+            } catch (error) {
+                console.error('매출 통계 조회 실패:', error);
+                document.getElementById('sales-stats-result').innerHTML = '<p style="color: #dc3545;">데이터 조회에 실패했습니다.</p>';
+            }
+        }
+
+        // 매출 통계 표시
+        function displaySalesStats(data) {
+            const resultDiv = document.getElementById('sales-stats-result');
+            resultDiv.innerHTML = `
+                <h4>📊 매출 요약</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 15px 0;">
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #1976d2;">₩${data.totalSales.toLocaleString()}</div>
+                        <div style="color: #666;">총 매출</div>
+                    </div>
+                    <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #7b1fa2;">${data.totalOrders}</div>
+                        <div style="color: #666;">총 주문수</div>
+                    </div>
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #388e3c;">₩${data.avgOrderValue.toLocaleString()}</div>
+                        <div style="color: #666;">평균 주문금액</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 시간대별 판매 조회
+        async function getHourlySales() {
+            try {
+                const mockHourlyData = [
+                    { hour: '09:00', sales: 85000, orders: 12 },
+                    { hour: '10:00', sales: 125000, orders: 18 },
+                    { hour: '11:00', sales: 185000, orders: 25 },
+                    { hour: '12:00', sales: 220000, orders: 32 },
+                    { hour: '13:00', sales: 195000, orders: 28 },
+                    { hour: '14:00', sales: 165000, orders: 24 },
+                    { hour: '15:00', sales: 145000, orders: 21 },
+                    { hour: '16:00', sales: 175000, orders: 26 },
+                    { hour: '17:00', sales: 200000, orders: 30 },
+                    { hour: '18:00', sales: 225000, orders: 35 },
+                    { hour: '19:00', sales: 210000, orders: 31 },
+                    { hour: '20:00', sales: 180000, orders: 27 }
+                ];
+
+                displayHourlySales(mockHourlyData);
+                
+            } catch (error) {
+                console.error('시간대별 판매 조회 실패:', error);
+            }
+        }
+
+        // 시간대별 판매 표시
+        function displayHourlySales(data) {
+            const resultDiv = document.getElementById('sales-stats-result');
+            let tableHTML = `
+                <h4>⏰ 시간대별 판매 현황</h4>
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>시간</th>
+                            <th>매출</th>
+                            <th>주문수</th>
+                            <th>평균 주문금액</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(item => {
+                const avgOrder = Math.round(item.sales / item.orders);
+                tableHTML += `
+                    <tr>
+                        <td>${item.hour}</td>
+                        <td>₩${item.sales.toLocaleString()}</td>
+                        <td>${item.orders}건</td>
+                        <td>₩${avgOrder.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</tbody></table>';
+            resultDiv.innerHTML = tableHTML;
+        }
+
+        // 인기 상품 조회
+        async function getTopProducts() {
+            try {
+                const mockTopProducts = [
+                    { name: '아몬드봉봉', sales: 125000, orders: 45, rank: 1 },
+                    { name: '민트초코', sales: 98000, orders: 38, rank: 2 },
+                    { name: '딸기', sales: 87000, orders: 32, rank: 3 },
+                    { name: '바닐라', sales: 76000, orders: 28, rank: 4 },
+                    { name: '초코', sales: 65000, orders: 25, rank: 5 }
+                ];
+
+                displayTopProducts(mockTopProducts);
+                
+            } catch (error) {
+                console.error('인기 상품 조회 실패:', error);
+            }
+        }
+
+        // 인기 상품 표시
+        function displayTopProducts(products) {
+            const resultDiv = document.getElementById('top-products-result');
+            let html = '<h4>🏆 인기 상품 순위</h4>';
+            
+            products.forEach(product => {
+                const avgOrder = Math.round(product.sales / product.orders);
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-weight: bold; color: #667eea; margin-right: 15px; font-size: 1.2em;">#${product.rank}</span>
+                            <span style="font-size: 1.1em; font-weight: 500;">${product.name}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #28a745;">₩${product.sales.toLocaleString()}</div>
+                            <div style="font-size: 0.9em; color: #666;">${product.orders}건 (평균 ₩${avgOrder.toLocaleString()})</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // 상품 비교
+        async function getProductComparison() {
+            try {
+                const mockComparison = [
+                    { name: '아몬드봉봉', thisWeek: 125000, lastWeek: 118000, change: '+5.9%' },
+                    { name: '민트초코', thisWeek: 98000, lastWeek: 92000, change: '+6.5%' },
+                    { name: '딸기', thisWeek: 87000, lastWeek: 85000, change: '+2.4%' },
+                    { name: '바닐라', thisWeek: 76000, lastWeek: 78000, change: '-2.6%' },
+                    { name: '초코', thisWeek: 65000, lastWeek: 68000, change: '-4.4%' }
+                ];
+
+                displayProductComparison(mockComparison);
+                
+            } catch (error) {
+                console.error('상품 비교 실패:', error);
+            }
+        }
+
+        // 상품 비교 표시
+        function displayProductComparison(products) {
+            const resultDiv = document.getElementById('top-products-result');
+            let html = '<h4>📈 주간 상품 비교</h4>';
+            
+            products.forEach(product => {
+                const changeColor = product.change.startsWith('+') ? '#28a745' : '#dc3545';
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: #f8f9fa; border-radius: 8px;">
+                        <div style="font-size: 1.1em; font-weight: 500;">${product.name}</div>
+                        <div style="text-align: right;">
+                            <div>이번 주: ₩${product.thisWeek.toLocaleString()}</div>
+                            <div style="font-size: 0.9em; color: #666;">지난 주: ₩${product.lastWeek.toLocaleString()}</div>
+                            <div style="font-weight: bold; color: ${changeColor};">${product.change}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // 매출 차트 그리기
+        function drawSalesChart(salesData) {
+            const canvas = document.getElementById('salesChart');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 400;
+
+            const maxSales = Math.max(...salesData.map(d => d.sales));
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 그리드 그리기
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = (canvas.height - 60) * (i / 5) + 30;
+                ctx.beginPath();
+                ctx.moveTo(80, y);
+                ctx.lineTo(canvas.width - 20, y);
+                ctx.stroke();
+            }
+
+            // 매출 라인 그리기
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            salesData.forEach((data, index) => {
+                const x = 80 + (canvas.width - 100) * (index / (salesData.length - 1));
+                const y = canvas.height - 30 - (canvas.height - 60) * (data.sales / maxSales);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+
+            // 데이터 포인트 그리기
+            ctx.fillStyle = '#667eea';
+            salesData.forEach((data, index) => {
+                const x = 80 + (canvas.width - 100) * (index / (salesData.length - 1));
+                const y = canvas.height - 30 - (canvas.height - 60) * (data.sales / maxSales);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+
+            // X축 라벨
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            salesData.forEach((data, index) => {
+                const x = 80 + (canvas.width - 100) * (index / (salesData.length - 1));
+                ctx.fillText(data.date.slice(5), x, canvas.height - 10);
+            });
+        }
+
+        // 최근 판매 내역 로드
+        async function loadRecentSales() {
+            try {
+                const mockRecentSales = [
+                    { id: 'S001', time: '14:30', products: '아몬드봉봉, 민트초코', total: 8500, status: '완료' },
+                    { id: 'S002', time: '14:25', products: '딸기, 바닐라', total: 7200, status: '완료' },
+                    { id: 'S003', time: '14:20', products: '초코, 아몬드봉봉', total: 7800, status: '완료' },
+                    { id: 'S004', time: '14:15', products: '민트초코', total: 3500, status: '완료' },
+                    { id: 'S005', time: '14:10', products: '딸기, 바닐라, 초코', total: 10500, status: '완료' }
+                ];
+
+                displayRecentSales(mockRecentSales);
+                
+            } catch (error) {
+                console.error('최근 판매 내역 로드 실패:', error);
+            }
+        }
+
+        // 최근 판매 내역 표시
+        function displayRecentSales(sales) {
+            const container = document.getElementById('recent-sales');
+            let html = `
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>주문번호</th>
+                            <th>시간</th>
+                            <th>상품</th>
+                            <th>총액</th>
+                            <th>상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            sales.forEach(sale => {
+                html += `
+                    <tr>
+                        <td>${sale.id}</td>
+                        <td>${sale.time}</td>
+                        <td>${sale.products}</td>
+                        <td>₩${sale.total.toLocaleString()}</td>
+                        <td><span style="color: #28a745; font-weight: bold;">${sale.status}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // 페이지 로드 시 실행
+        window.onload = function() {
+            checkAuth();
+            initializeDates();
+            loadRecentSales();
+        };
+    </script>
+</body>
+</html> 

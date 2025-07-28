@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaskinSales - 재고관리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            float: right;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .inventory-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .inventory-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .stock-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .stock-normal {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .stock-low {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .stock-out {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-menu {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 재고관리</h1>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-btn">대시보드</a>
+                <a href="sales.html" class="nav-btn">매출관리</a>
+                <a href="inventory.html" class="nav-btn active">재고관리</a>
+                <a href="ai-analysis.html" class="nav-btn">AI분석</a>
+            </div>
+            <button class="logout-btn" onclick="logout()">로그아웃</button>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <h3>📊 현재 재고 현황</h3>
+                <button class="btn" onclick="getCurrentInventory()">재고 조회</button>
+                <button class="btn btn-warning" onclick="getLowStockItems()">부족 재고 확인</button>
+                <div id="inventory-result" class="results"></div>
+            </div>
+
+            <div class="card">
+                <h3>🔄 재고 입출고 관리</h3>
+                <div class="form-group">
+                    <label>상품 ID:</label>
+                    <input type="text" id="product-id" placeholder="예: P001">
+                </div>
+                <div class="form-group">
+                    <label>수량:</label>
+                    <input type="number" id="quantity" placeholder="입고: 양수, 출고: 음수">
+                </div>
+                <div class="form-group">
+                    <label>타입:</label>
+                    <select id="transaction-type">
+                        <option value="IN">입고</option>
+                        <option value="OUT">출고</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>비고:</label>
+                    <input type="text" id="note" placeholder="입출고 사유">
+                </div>
+                <button class="btn btn-success" onclick="updateInventory()">재고 업데이트</button>
+                <div id="update-result" class="results"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h3>📈 재고 변동 이력</h3>
+            <div class="form-group">
+                <label>상품 ID:</label>
+                <input type="text" id="history-product-id" placeholder="조회할 상품 ID">
+            </div>
+            <button class="btn" onclick="getInventoryHistory()">이력 조회</button>
+            <div id="history-result" class="results"></div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h3>⚠️ 재고 알림</h3>
+            <div id="stock-alerts"></div>
+        </div>
+    </div>
+
+    <script>
+        // 로그인 상태 확인
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // 로그아웃
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+
+        // 현재 재고 조회
+        async function getCurrentInventory() {
+            try {
+                const mockInventory = [
+                    { id: 'P001', name: '아몬드봉봉', currentStock: 150, minStock: 50, maxStock: 200, status: 'normal' },
+                    { id: 'P002', name: '민트초코', currentStock: 80, minStock: 50, maxStock: 200, status: 'normal' },
+                    { id: 'P003', name: '딸기', currentStock: 45, minStock: 50, maxStock: 200, status: 'low' },
+                    { id: 'P004', name: '바닐라', currentStock: 120, minStock: 50, maxStock: 200, status: 'normal' },
+                    { id: 'P005', name: '초코', currentStock: 0, minStock: 50, maxStock: 200, status: 'out' },
+                    { id: 'P006', name: '카라멜', currentStock: 35, minStock: 50, maxStock: 200, status: 'low' }
+                ];
+
+                displayInventory(mockInventory);
+                
+            } catch (error) {
+                console.error('재고 조회 실패:', error);
+                document.getElementById('inventory-result').innerHTML = '<p style="color: #dc3545;">재고 조회에 실패했습니다.</p>';
+            }
+        }
+
+        // 재고 표시
+        function displayInventory(inventory) {
+            const resultDiv = document.getElementById('inventory-result');
+            let html = `
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>상품 ID</th>
+                            <th>상품명</th>
+                            <th>현재 재고</th>
+                            <th>최소 재고</th>
+                            <th>최대 재고</th>
+                            <th>상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            inventory.forEach(item => {
+                let statusClass = 'stock-normal';
+                let statusText = '정상';
+                
+                if (item.status === 'low') {
+                    statusClass = 'stock-low';
+                    statusText = '부족';
+                } else if (item.status === 'out') {
+                    statusClass = 'stock-out';
+                    statusText = '품절';
+                }
+
+                html += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.currentStock}</td>
+                        <td>${item.minStock}</td>
+                        <td>${item.maxStock}</td>
+                        <td><span class="stock-status ${statusClass}">${statusText}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            resultDiv.innerHTML = html;
+        }
+
+        // 부족 재고 확인
+        async function getLowStockItems() {
+            try {
+                const mockLowStock = [
+                    { id: 'P003', name: '딸기', currentStock: 45, minStock: 50, needed: 5 },
+                    { id: 'P005', name: '초코', currentStock: 0, minStock: 50, needed: 50 },
+                    { id: 'P006', name: '카라멜', currentStock: 35, minStock: 50, needed: 15 }
+                ];
+
+                displayLowStockItems(mockLowStock);
+                
+            } catch (error) {
+                console.error('부족 재고 조회 실패:', error);
+            }
+        }
+
+        // 부족 재고 표시
+        function displayLowStockItems(items) {
+            const resultDiv = document.getElementById('inventory-result');
+            let html = '<h4>⚠️ 부족 재고 상품</h4>';
+            
+            items.forEach(item => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                        <div>
+                            <div style="font-weight: bold; color: #856404;">${item.name} (${item.id})</div>
+                            <div style="font-size: 0.9em; color: #666;">현재: ${item.currentStock}개 / 최소: ${item.minStock}개</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #dc3545;">부족: ${item.needed}개</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // 재고 업데이트
+        async function updateInventory() {
+            const productId = document.getElementById('product-id').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const type = document.getElementById('transaction-type').value;
+            const note = document.getElementById('note').value;
+
+            if (!productId || !quantity) {
+                alert('상품 ID와 수량을 입력해주세요.');
+                return;
+            }
+
+            try {
+                // 실제 API 호출 대신 성공 메시지 표시
+                const resultDiv = document.getElementById('update-result');
+                const action = type === 'IN' ? '입고' : '출고';
+                const absQuantity = Math.abs(quantity);
+                
+                resultDiv.innerHTML = `
+                    <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px;">
+                        <h4>✅ 재고 업데이트 완료</h4>
+                        <p><strong>상품 ID:</strong> ${productId}</p>
+                        <p><strong>${action} 수량:</strong> ${absQuantity}개</p>
+                        <p><strong>비고:</strong> ${note || '없음'}</p>
+                        <p><strong>처리 시간:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                `;
+
+                // 입력 필드 초기화
+                document.getElementById('product-id').value = '';
+                document.getElementById('quantity').value = '';
+                document.getElementById('note').value = '';
+                
+            } catch (error) {
+                console.error('재고 업데이트 실패:', error);
+                document.getElementById('update-result').innerHTML = '<p style="color: #dc3545;">재고 업데이트에 실패했습니다.</p>';
+            }
+        }
+
+        // 재고 이력 조회
+        async function getInventoryHistory() {
+            const productId = document.getElementById('history-product-id').value;
+            
+            if (!productId) {
+                alert('상품 ID를 입력해주세요.');
+                return;
+            }
+
+            try {
+                const mockHistory = [
+                    { date: '2024-01-21 14:30', type: 'OUT', quantity: 5, note: '판매', balance: 145 },
+                    { date: '2024-01-21 10:15', type: 'IN', quantity: 20, note: '입고', balance: 150 },
+                    { date: '2024-01-20 16:45', type: 'OUT', quantity: 3, note: '판매', balance: 130 },
+                    { date: '2024-01-20 09:30', type: 'IN', quantity: 25, note: '입고', balance: 133 },
+                    { date: '2024-01-19 15:20', type: 'OUT', quantity: 8, note: '판매', balance: 108 }
+                ];
+
+                displayInventoryHistory(mockHistory, productId);
+                
+            } catch (error) {
+                console.error('재고 이력 조회 실패:', error);
+                document.getElementById('history-result').innerHTML = '<p style="color: #dc3545;">이력 조회에 실패했습니다.</p>';
+            }
+        }
+
+        // 재고 이력 표시
+        function displayInventoryHistory(history, productId) {
+            const resultDiv = document.getElementById('history-result');
+            let html = `<h4>📋 ${productId} 재고 변동 이력</h4>`;
+            html += `
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>날짜/시간</th>
+                            <th>구분</th>
+                            <th>수량</th>
+                            <th>비고</th>
+                            <th>잔고</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            history.forEach(item => {
+                const typeText = item.type === 'IN' ? '입고' : '출고';
+                const typeColor = item.type === 'IN' ? '#28a745' : '#dc3545';
+                
+                html += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><span style="color: ${typeColor}; font-weight: bold;">${typeText}</span></td>
+                        <td>${item.quantity}개</td>
+                        <td>${item.note}</td>
+                        <td>${item.balance}개</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            resultDiv.innerHTML = html;
+        }
+
+        // 재고 알림 로드
+        async function loadStockAlerts() {
+            try {
+                const mockAlerts = [
+                    { type: 'danger', message: '초코 아이스크림이 품절되었습니다. 긴급 발주가 필요합니다.' },
+                    { type: 'warning', message: '딸기 아이스크림 재고가 부족합니다. (현재: 45개, 최소: 50개)' },
+                    { type: 'warning', message: '카라멜 아이스크림 재고가 부족합니다. (현재: 35개, 최소: 50개)' }
+                ];
+
+                displayStockAlerts(mockAlerts);
+                
+            } catch (error) {
+                console.error('재고 알림 로드 실패:', error);
+            }
+        }
+
+        // 재고 알림 표시
+        function displayStockAlerts(alerts) {
+            const container = document.getElementById('stock-alerts');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = '<p style="color: #28a745;">현재 재고 알림이 없습니다.</p>';
+                return;
+            }
+
+            alerts.forEach(alert => {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${alert.type}`;
+                alertDiv.innerHTML = `
+                    <strong>⚠️ ${alert.type === 'danger' ? '긴급' : '주의'}:</strong> ${alert.message}
+                `;
+                container.appendChild(alertDiv);
+            });
+        }
+
+        // 페이지 로드 시 실행
+        window.onload = function() {
+            checkAuth();
+            getCurrentInventory();
+            loadStockAlerts();
+        };
+    </script>
+</body>
+</html> 

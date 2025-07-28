@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaskinSales - AI분석</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            float: right;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .prediction-card {
+            background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .recommendation-card {
+            background: linear-gradient(45deg, #f3e5f5, #e1bee7);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .ai-loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .ai-loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            margin-top: 20px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .weather-info {
+            background: linear-gradient(45deg, #e8f5e8, #c8e6c9);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-menu {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI분석</h1>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-btn">대시보드</a>
+                <a href="sales.html" class="nav-btn">매출관리</a>
+                <a href="inventory.html" class="nav-btn">재고관리</a>
+                <a href="ai-analysis.html" class="nav-btn active">AI분석</a>
+            </div>
+            <button class="logout-btn" onclick="logout()">로그아웃</button>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <h3>📈 판매 예측</h3>
+                <div class="form-group">
+                    <label>상품 ID:</label>
+                    <input type="text" id="predict-product-id" placeholder="예: P001">
+                </div>
+                <div class="form-group">
+                    <label>예측 기간:</label>
+                    <select id="predict-period">
+                        <option value="1">1주일</option>
+                        <option value="2">2주일</option>
+                        <option value="4">4주일</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="predictSales()">판매 예측</button>
+                <div id="prediction-result" class="results"></div>
+            </div>
+
+            <div class="card">
+                <h3>🛒 발주 추천</h3>
+                <div class="form-group">
+                    <label>상품 ID:</label>
+                    <input type="text" id="order-product-id" placeholder="예: P001">
+                </div>
+                <div class="form-group">
+                    <label>고려 기간:</label>
+                    <select id="order-period">
+                        <option value="7">1주일</option>
+                        <option value="14">2주일</option>
+                        <option value="30">1개월</option>
+                    </select>
+                </div>
+                <button class="btn btn-warning" onclick="recommendOrder()">발주 수량 추천</button>
+                <div id="order-result" class="results"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h3>🌤️ 날씨 기반 상품 추천</h3>
+            <div class="form-group">
+                <label>날씨 조건:</label>
+                <select id="weather-condition">
+                    <option value="sunny">맑음</option>
+                    <option value="cloudy">흐림</option>
+                    <option value="rainy">비</option>
+                    <option value="snowy">눈</option>
+                    <option value="hot">더움</option>
+                    <option value="cold">추움</option>
+                </select>
+            </div>
+            <button class="btn btn-info" onclick="recommendProducts()">상품 추천</button>
+            <div id="weather-result" class="results"></div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h3>📊 AI 분석 차트</h3>
+            <div class="chart-container">
+                <canvas id="aiChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h3>💡 AI 인사이트</h3>
+            <div id="ai-insights"></div>
+        </div>
+    </div>
+
+    <script>
+        // 로그인 상태 확인
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // 로그아웃
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+
+        // 판매 예측
+        async function predictSales() {
+            const productId = document.getElementById('predict-product-id').value;
+            const period = document.getElementById('predict-period').value;
+            
+            if (!productId) {
+                alert('상품 ID를 입력해주세요.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('prediction-result');
+            resultDiv.innerHTML = '<div class="ai-loading">AI가 판매를 예측하고 있습니다...</div>';
+
+            try {
+                // 실제 API 호출 대신 2초 후 결과 표시
+                setTimeout(() => {
+                    const mockPrediction = {
+                        productId: productId,
+                        productName: '아몬드봉봉',
+                        period: period,
+                        predictions: [
+                            { week: 1, predictedSales: 125, confidence: 85 },
+                            { week: 2, predictedSales: 138, confidence: 82 },
+                            { week: 3, predictedSales: 142, confidence: 78 },
+                            { week: 4, predictedSales: 135, confidence: 75 }
+                        ],
+                        factors: ['계절적 요인', '이전 판매 패턴', '마케팅 활동', '경쟁사 동향']
+                    };
+
+                    displaySalesPrediction(mockPrediction);
+                }, 2000);
+                
+            } catch (error) {
+                console.error('판매 예측 실패:', error);
+                resultDiv.innerHTML = '<p style="color: #dc3545;">판매 예측에 실패했습니다.</p>';
+            }
+        }
+
+        // 판매 예측 결과 표시
+        function displaySalesPrediction(prediction) {
+            const resultDiv = document.getElementById('prediction-result');
+            let html = `
+                <div class="prediction-card">
+                    <h4>📈 ${prediction.productName} (${prediction.productId}) 판매 예측</h4>
+                    <div style="margin: 15px 0;">
+                        <strong>예측 기간:</strong> ${prediction.period}주<br>
+                        <strong>고려 요인:</strong> ${prediction.factors.join(', ')}
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 10px; text-align: left;">주차</th>
+                                <th style="padding: 10px; text-align: left;">예측 판매량</th>
+                                <th style="padding: 10px; text-align: left;">신뢰도</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            prediction.predictions.forEach(pred => {
+                const confidenceColor = pred.confidence >= 80 ? '#28a745' : pred.confidence >= 60 ? '#ffc107' : '#dc3545';
+                html += `
+                    <tr>
+                        <td style="padding: 10px;">${pred.week}주차</td>
+                        <td style="padding: 10px; font-weight: bold;">${pred.predictedSales}개</td>
+                        <td style="padding: 10px; color: ${confidenceColor};">${pred.confidence}%</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table></div>';
+            resultDiv.innerHTML = html;
+        }
+
+        // 발주 추천
+        async function recommendOrder() {
+            const productId = document.getElementById('order-product-id').value;
+            const period = document.getElementById('order-period').value;
+            
+            if (!productId) {
+                alert('상품 ID를 입력해주세요.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('order-result');
+            resultDiv.innerHTML = '<div class="ai-loading">AI가 발주 수량을 분석하고 있습니다...</div>';
+
+            try {
+                setTimeout(() => {
+                    const mockRecommendation = {
+                        productId: productId,
+                        productName: '민트초코',
+                        currentStock: 80,
+                        minStock: 50,
+                        avgDailySales: 12,
+                        recommendedOrder: 150,
+                        reasoning: [
+                            '일평균 판매량: 12개',
+                            '안전 재고: 50개',
+                            '배송 소요일: 3일',
+                            '예상 수요 증가: 15%'
+                        ],
+                        urgency: 'normal'
+                    };
+
+                    displayOrderRecommendation(mockRecommendation);
+                }, 2000);
+                
+            } catch (error) {
+                console.error('발주 추천 실패:', error);
+                resultDiv.innerHTML = '<p style="color: #dc3545;">발주 추천에 실패했습니다.</p>';
+            }
+        }
+
+        // 발주 추천 결과 표시
+        function displayOrderRecommendation(recommendation) {
+            const resultDiv = document.getElementById('order-result');
+            const urgencyColor = recommendation.urgency === 'urgent' ? '#dc3545' : recommendation.urgency === 'high' ? '#ffc107' : '#28a745';
+            const urgencyText = recommendation.urgency === 'urgent' ? '긴급' : recommendation.urgency === 'high' ? '높음' : '보통';
+            
+            let html = `
+                <div class="recommendation-card">
+                    <h4>🛒 ${recommendation.productName} (${recommendation.productId}) 발주 추천</h4>
+                    <div style="margin: 15px 0;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #1976d2;">${recommendation.currentStock}개</div>
+                                <div style="color: #666;">현재 재고</div>
+                            </div>
+                            <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #7b1fa2;">${recommendation.avgDailySales}개</div>
+                                <div style="color: #666;">일평균 판매</div>
+                            </div>
+                            <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 1.5em; font-weight: bold; color: #388e3c;">${recommendation.recommendedOrder}개</div>
+                                <div style="color: #666;">추천 발주량</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <strong>우선순위:</strong> <span style="color: ${urgencyColor}; font-weight: bold;">${urgencyText}</span>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <strong>추천 근거:</strong>
+                            <ul style="margin-top: 10px; padding-left: 20px;">
+            `;
+
+            recommendation.reasoning.forEach(reason => {
+                html += `<li>${reason}</li>`;
+            });
+
+            html += '</ul></div></div></div>';
+            resultDiv.innerHTML = html;
+        }
+
+        // 날씨 기반 상품 추천
+        async function recommendProducts() {
+            const weather = document.getElementById('weather-condition').value;
+            
+            const resultDiv = document.getElementById('weather-result');
+            resultDiv.innerHTML = '<div class="ai-loading">AI가 날씨를 분석하여 상품을 추천하고 있습니다...</div>';
+
+            try {
+                setTimeout(() => {
+                    const mockWeatherRecommendations = {
+                        sunny: [
+                            { name: '아몬드봉봉', reason: '맑은 날씨에 인기', confidence: 92 },
+                            { name: '딸기', reason: '상큼한 맛으로 인기', confidence: 88 },
+                            { name: '바닐라', reason: '클래식한 선택', confidence: 85 }
+                        ],
+                        rainy: [
+                            { name: '따뜻한 음료', reason: '비 오는 날 인기', confidence: 95 },
+                            { name: '초코', reason: '편안한 맛', confidence: 90 },
+                            { name: '카라멜', reason: '달콤한 위로', confidence: 87 }
+                        ],
+                        hot: [
+                            { name: '민트초코', reason: '시원한 맛', confidence: 94 },
+                            { name: '딸기', reason: '상큼한 맛', confidence: 91 },
+                            { name: '레몬', reason: '상쾌한 맛', confidence: 89 }
+                        ],
+                        cold: [
+                            { name: '따뜻한 음료', reason: '추운 날 인기', confidence: 96 },
+                            { name: '카라멜', reason: '달콤한 위로', confidence: 93 },
+                            { name: '바닐라', reason: '클래식한 선택', confidence: 90 }
+                        ]
+                    };
+
+                    const recommendations = mockWeatherRecommendations[weather] || mockWeatherRecommendations.sunny;
+                    displayWeatherRecommendations(recommendations, weather);
+                }, 2000);
+                
+            } catch (error) {
+                console.error('날씨 기반 추천 실패:', error);
+                resultDiv.innerHTML = '<p style="color: #dc3545;">날씨 기반 추천에 실패했습니다.</p>';
+            }
+        }
+
+        // 날씨 기반 추천 결과 표시
+        function displayWeatherRecommendations(recommendations, weather) {
+            const resultDiv = document.getElementById('weather-result');
+            const weatherText = {
+                sunny: '맑음',
+                cloudy: '흐림',
+                rainy: '비',
+                snowy: '눈',
+                hot: '더움',
+                cold: '추움'
+            };
+
+            let html = `
+                <div class="weather-info">
+                    <h4>🌤️ ${weatherText[weather]} 날씨 상품 추천</h4>
+                    <div style="margin-top: 15px;">
+            `;
+
+            recommendations.forEach((rec, index) => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #4caf50;">
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-weight: bold; color: #4caf50; margin-right: 15px; font-size: 1.2em;">#${index + 1}</span>
+                            <div>
+                                <div style="font-size: 1.1em; font-weight: 500;">${rec.name}</div>
+                                <div style="font-size: 0.9em; color: #666;">${rec.reason}</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #28a745;">${rec.confidence}%</div>
+                            <div style="font-size: 0.9em; color: #666;">추천도</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div></div>';
+            resultDiv.innerHTML = html;
+        }
+
+        // AI 차트 그리기
+        function drawAIChart() {
+            const canvas = document.getElementById('aiChart');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 400;
+
+            const data = {
+                labels: ['1주차', '2주차', '3주차', '4주차'],
+                actual: [120, 135, 128, 142],
+                predicted: [125, 138, 142, 135]
+            };
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 그리드 그리기
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = (canvas.height - 60) * (i / 5) + 30;
+                ctx.beginPath();
+                ctx.moveTo(80, y);
+                ctx.lineTo(canvas.width - 20, y);
+                ctx.stroke();
+            }
+
+            const maxValue = Math.max(...data.actual, ...data.predicted);
+            
+            // 실제 데이터 라인
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            data.actual.forEach((value, index) => {
+                const x = 80 + (canvas.width - 100) * (index / (data.actual.length - 1));
+                const y = canvas.height - 30 - (canvas.height - 60) * (value / maxValue);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+
+            // 예측 데이터 라인
+            ctx.strokeStyle = '#28a745';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            
+            data.predicted.forEach((value, index) => {
+                const x = 80 + (canvas.width - 100) * (index / (data.predicted.length - 1));
+                const y = canvas.height - 30 - (canvas.height - 60) * (value / maxValue);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 범례
+            ctx.fillStyle = '#333';
+            ctx.font = '14px Arial';
+            ctx.fillText('실제 판매량', 80, 20);
+            ctx.fillText('AI 예측', 200, 20);
+        }
+
+        // AI 인사이트 로드
+        async function loadAIInsights() {
+            try {
+                const mockInsights = [
+                    {
+                        type: 'trend',
+                        title: '📈 판매 트렌드 분석',
+                        content: '아몬드봉봉의 판매량이 지난 주 대비 15% 증가했습니다. 주말 판매량이 특히 높은 것으로 나타났습니다.'
+                    },
+                    {
+                        type: 'recommendation',
+                        title: '💡 최적화 제안',
+                        content: '민트초코의 재고가 부족할 것으로 예상됩니다. 다음 주 발주를 권장합니다.'
+                    },
+                    {
+                        type: 'weather',
+                        title: '🌤️ 날씨 영향 분석',
+                        content: '맑은 날씨에는 딸기 아이스크림 판매가 25% 증가하는 것으로 분석되었습니다.'
+                    }
+                ];
+
+                displayAIInsights(mockInsights);
+                
+            } catch (error) {
+                console.error('AI 인사이트 로드 실패:', error);
+            }
+        }
+
+        // AI 인사이트 표시
+        function displayAIInsights(insights) {
+            const container = document.getElementById('ai-insights');
+            
+            insights.forEach(insight => {
+                const insightDiv = document.createElement('div');
+                insightDiv.style.cssText = `
+                    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin: 15px 0;
+                    border-left: 4px solid #667eea;
+                `;
+                
+                insightDiv.innerHTML = `
+                    <h4 style="color: #333; margin-bottom: 10px;">${insight.title}</h4>
+                    <p style="color: #666; line-height: 1.6;">${insight.content}</p>
+                `;
+                
+                container.appendChild(insightDiv);
+            });
+        }
+
+        // 페이지 로드 시 실행
+        window.onload = function() {
+            checkAuth();
+            drawAIChart();
+            loadAIInsights();
+        };
+    </script>
+</body>
+</html> 
